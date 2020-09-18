@@ -59,6 +59,7 @@ class MyWindow(Gtk.Window):
         #grid
         self.grid = Gtk.Grid()
         self.grid.set_row_spacing(10)
+        self.grid.set_column_spacing(10)
         self.add(self.grid)
 
         self.grid.attach(self.stopwatch_label1, 0,0,2,1)
