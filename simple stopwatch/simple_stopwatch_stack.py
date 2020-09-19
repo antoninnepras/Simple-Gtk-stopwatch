@@ -4,10 +4,9 @@ import gi
 from playsound import playsound
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Pango
-
 from os import system
 
-openStack = False
+openClassic = False
 
 class MyWindow(Gtk.Window):
     def __init__(self):
@@ -17,10 +16,10 @@ class MyWindow(Gtk.Window):
         self.connect("destroy",self.stop_all)
         #fonts
         font1 = Pango.FontDescription("DejaVu 20")
-        font2 = Pango.FontDescription("DejaVu 20")
 
         #stopwatch
         self.stopwatch_label1 = Gtk.Label(label="STOPWATCH")
+        self.stopwatch_label1.set_width_chars(60)
         self.button1 = Gtk.Button(label="START")
         self.button1.connect("clicked", self.on_button1_clicked)
         self.button1.override_font(font1)
@@ -31,14 +30,16 @@ class MyWindow(Gtk.Window):
         self.button2.override_font(font1)
 
         self.stopwatch_label = Gtk.Label(label=("STOPWATCH"))
-        self.stopwatch_label.override_font(font2)
+        self.stopwatch_label.override_font(font1)
 
         #timer
         self.timer_label = Gtk.Label(label="TIMER")
+        self.timer_label.set_width_chars(60)
         timer_time=0
 
         self.timer_entry = Gtk.Entry()
         self.timer_entry.set_placeholder_text("SET TIME")
+        self.timer_entry.set_alignment(0.5)
         self.timer_entry.override_font(font1)
         self.timer_entry.connect("activate",self.start_timer)
 
@@ -56,30 +57,50 @@ class MyWindow(Gtk.Window):
 
         #clock
         self.clock_label1 = Gtk.Label(label="CLOCK")
+        self.clock_label1.set_width_chars(60)
         self.clock_label = Gtk.Label(label="TIME")
         self.clock_label.override_font(font1)
         self.t3=threading.Thread(target=self.clock)
         self.t3.start()
 
-        #grid
-        self.grid = Gtk.Grid()
-        self.grid.set_row_spacing(10)
-        self.grid.set_column_spacing(10)
-        self.add(self.grid)
+        #grids
+        self.clockGrid = Gtk.Grid()
+        self.clockGrid.set_row_spacing(10)
+        self.clockGrid.set_column_spacing(10)
+        self.clockGrid.attach(self.clock_label1,0,0,2,1)
+        self.clockGrid.attach(self.clock_label,0,1,2,1)
 
-        self.grid.attach(self.stopwatch_label1, 0,0,2,1)
-        self.grid.attach(self.button1,0,1,1,1)
-        self.grid.attach(self.button2, 0,2,1,1)
-        self.grid.attach(self.stopwatch_label, 1,1,1,2)
+        self.stopWatchGrid = Gtk.Grid()
+        self.stopWatchGrid.attach(self.stopwatch_label1,0,0,2,1)
+        self.stopWatchGrid.attach(self.button1,0,1,1,1)
+        self.stopWatchGrid.attach(self.button2, 0,2,1,1)
+        self.stopWatchGrid.attach(self.stopwatch_label, 1,1,1,2)
 
-        self.grid.attach(self.timer_label, 0,3,2,1)
-        self.grid.attach(self.timer_entry, 0,4,1,1)
-        self.grid.attach(self.timer_button, 0,5,1,1)
-        self.grid.attach(self.timer_stop_button, 1,5,1,1)
-        self.grid.attach(self.timer_remaining_time_label, 1,4,1,1)
+        self.timerGrid = Gtk.Grid()
+        self.timerGrid.attach(self.timer_label,0,0,2,1)
+        self.timerGrid.attach(self.timer_entry,0,1,1,1)
+        self.timerGrid.attach(self.timer_remaining_time_label, 1,1,1,1)
+        self.timerGrid.attach(self.timer_button,0,2,1,1)
+        self.timerGrid.attach(self.timer_stop_button,1,2,1,1)
 
-        self.grid.attach(self.clock_label1, 0,6,2,1)
-        self.grid.attach(self.clock_label, 0,7,2,1)
+        #stacks
+        self.stack = Gtk.Stack()
+        self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
+        self.stack.set_transition_duration(500)
+        self.stack.add_titled(self.clockGrid,"clockGrid","Clock")
+        self.stack.add_titled(self.stopWatchGrid,"stopWatchGrid","Stopwatch")
+        self.stack.add_titled(self.timerGrid, "timerGrid", "Timer")
+        self.stackSwitcher = Gtk.StackSwitcher()
+        self.stackSwitcher.set_stack(self.stack)
+        self.stackSwitcher.set_orientation(Gtk.Orientation.VERTICAL)
+
+        #mainGrid
+        self.mainGrid = Gtk.Grid()
+        self.mainGrid.set_row_spacing(5)
+        self.mainGrid.set_column_spacing(5)
+        self.mainGrid.attach(self.stackSwitcher, 0,0,1,1)
+        self.mainGrid.attach(self.stack, 1,0,1,1)
+        self.add(self.mainGrid)
 
         self.layoutButton = Gtk.Button()
         self.layoutButton.set_label("Layout")
@@ -159,13 +180,13 @@ class MyWindow(Gtk.Window):
 
     def changeLayout(self,widget):
         self.close()
-        global openStack
-        openStack = True
+        global openClassic
+        openClassic = True
 
 win = MyWindow()
 win.connect("destroy", Gtk.main_quit)
 win.show_all()
 Gtk.main()
 
-if openStack:
-    system("python3 simple_stopwatch_stack.py")
+if openClassic:
+    system("python3 simple_stopwatch.py")
